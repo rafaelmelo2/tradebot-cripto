@@ -1,0 +1,25 @@
+Início do teste em tempo real
+Capital inicial: 10000.00
+[2024-11-30 04:38:17] Compra simulada: Preço 579728.00, Quantidade 0.000100, Capital restante 9942.03
+[2024-11-30 23:00:03] Venda simulada: Preço 578811.00, Lucro -0.09, Capital atualizado 9941.94
+[2024-12-01 06:00:03] Compra simulada: Preço 584003.00, Quantidade 0.000100, Capital restante 9883.54
+[2024-12-01 06:10:07] Venda simulada: Preço 582900.00, Lucro -0.11, Capital atualizado 9883.42
+[2024-12-01 06:11:04] Compra simulada: Preço 582949.00, Quantidade 0.000100, Capital restante 9825.13
+[2024-12-01 06:23:09] Venda simulada: Preço 582837.00, Lucro -0.01, Capital atualizado 9825.12
+[2024-12-01 06:25:17] Compra simulada: Preço 582925.00, Quantidade 0.000100, Capital restante 9766.83
+[2024-12-01 06:25:34] Venda simulada: Preço 582904.00, Lucro -0.00, Capital atualizado 9766.82
+[2024-12-01 06:25:38] Compra simulada: Preço 582964.00, Quantidade 0.000100, Capital restante 9708.53
+[2024-12-01 06:26:04] Venda simulada: Preço 582921.00, Lucro -0.00, Capital atualizado 9708.52
+[2024-12-01 06:26:09] Compra simulada: Preço 582955.00, Quantidade 0.000100, Capital restante 9650.23
+[2024-12-01 06:26:16] Venda simulada: Preço 582922.00, Lucro -0.00, Capital atualizado 9650.22
+[2024-12-01 06:26:35] Compra simulada: Preço 582925.00, Quantidade 0.000100, Capital restante 9591.93
+[2024-12-01 06:26:46] Venda simulada: Preço 582921.00, Lucro -0.00, Capital atualizado 9591.93
+[2024-12-01 06:26:51] Compra simulada: Preço 582954.00, Quantidade 0.000100, Capital restante 9533.64
+[2024-12-01 06:27:05] Venda simulada: Preço 582913.00, Lucro -0.00, Capital atualizado 9533.63
+[2024-12-01 06:28:11] Compra simulada: Preço 582957.00, Quantidade 0.000100, Capital restante 9475.34
+[2024-12-01 06:31:25] Venda simulada: Preço 582912.00, Lucro -0.00, Capital atualizado 9475.33
+[2024-12-01 06:32:11] Compra simulada: Preço 582931.00, Quantidade 0.000100, Capital restante 9417.04
+[2024-12-01 06:32:16] Venda simulada: Preço 582913.00, Lucro -0.00, Capital atualizado 9417.04
+[2024-12-01 06:32:42] Compra simulada: Preço 582960.00, Quantidade 0.000100, Capital restante 9358.74
+[2024-12-01 06:33:54] Venda simulada: Preço 582872.00, Lucro -0.01, Capital atualizado 9358.73
+[2024-12-01 06:34:03] Compra simulada: Preço 582945.00, Quantidade 0.000100, Capital restante 9300.44
