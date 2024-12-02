@@ -1,0 +1,1 @@
+[2024-12-01 23:54:57] Infos passadas: [[{'codigo': 'BTCBRL', 'ativo': 'BTC', 'quantidade_moeda': 2e-05, 'posicao_atual': True}, {'codigo': 'ETHBRL', 'ativo': 'ETH', 'quantidade_moeda': 0.0006, 'posicao_atual': True}, {'codigo': 'ADABRL', 'ativo': 'ADA', 'quantidade_moeda': 2, 'posicao_atual': True}]] 

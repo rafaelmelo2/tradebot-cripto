@@ -1,0 +1,9 @@
+[2024-12-01 23:54:58] [BTC] Última Média Rápida: 586543.8571428572 | Última Média Devagar: 583171.45
+[2024-12-01 23:55:00] [ETH] Última Média Rápida: 22324.08428571429 | Última Média Devagar: 22262.17125
+[2024-12-01 23:55:03] [ADA] Última Média Rápida: 6.881 | Última Média Devagar: 6.531025000000001
+[2024-12-01 23:55:06] [BTC] Última Média Rápida: 586543.8571428572 | Última Média Devagar: 583171.45
+[2024-12-01 23:55:08] [ETH] Última Média Rápida: 22324.08428571429 | Última Média Devagar: 22262.17125
+[2024-12-01 23:55:11] [ADA] Última Média Rápida: 6.881 | Última Média Devagar: 6.531025000000001
+[2024-12-01 23:55:13] [BTC] Última Média Rápida: 586543.8571428572 | Última Média Devagar: 583171.45
+[2024-12-01 23:55:16] [ETH] Última Média Rápida: 22325.355714285717 | Última Média Devagar: 22262.39375
+[2024-12-01 23:55:18] [ADA] Última Média Rápida: 6.881 | Última Média Devagar: 6.531025000000001

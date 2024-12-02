@@ -1,4 +1,0 @@
-
-[2024-12-01 17:07:22] Infos passadas: [('BTCBRL', 'BTC', '1', Decimal('0.000020'))] 
-[2024-12-01 17:07:27] COMPROU O ATIVO [{'symbol': 'BTCBRL', 'orderId': 1276746199, 'orderListId': -1, 'clientOrderId': 'x-HNA2TXFJb9079a081b202bdb73b4d6', 'transactTime': 1733083648157, 'price': '0.00000000', 'origQty': '0.00002000', 'executedQty': '0.00002000', 'cummulativeQuoteQty': '11.67338000', 'status': 'FILLED', 'timeInForce': 'GTC', 'type': 'MARKET', 'side': 'BUY', 'workingTime': 1733083648157, 'fills': [{'price': '583669.00000000', 'qty': '0.00002000', 'commission': '0.00000002', 'commissionAsset': 'BTC', 'tradeId': 40651069}], 'selfTradePreventionMode': 'EXPIRE_MAKER'}]
-[2024-12-01 17:07:27] Ap�s compra (BRL): 1469.09878359

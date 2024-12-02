@@ -1,1 +1,0 @@
-[2024-12-01 18:06:20] Infos passadas: [('ADABRL', 'ADA', '1', Decimal('2.000000'))] 
