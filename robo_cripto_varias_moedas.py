@@ -19,20 +19,26 @@ cliente_binance = Client(api_key, secret_key)
 codigo_operado = "BTCBRL"
 ativo_operado = "BTC"
 quantidade_reservada = 1400  # Valor de BRL que deve ter disponível para compra
-# posicao_atual = False # TRUE SE TIVER COMPRADO
+
+# Período das candles
 periodo = Client.KLINE_INTERVAL_1HOUR
 
 # Definindo moedas
 moedas = [
-    {"codigo": "BTCBRL", "ativo": "BTC", "quantidade_moeda": 0.00002, "posicao_atual": True},
-    {"codigo": "ETHBRL", "ativo": "ETH", "quantidade_moeda": 0.0006, "posicao_atual": True},
-    {"codigo": "ADABRL", "ativo": "ADA", "quantidade_moeda": 2, "posicao_atual": True},
+    {"codigo": "BTCBRL", "ativo": "BTC", "quantidade_moeda": 0.00002, "posicao_atual": False},
+    {"codigo": "ETHBRL", "ativo": "ETH", "quantidade_moeda": 0.0006, "posicao_atual": False},
+    {"codigo": "ADABRL", "ativo": "ADA", "quantidade_moeda": 2, "posicao_atual": False},
+    {"codigo": "SOLBRL", "ativo": "SOL", "quantidade_moeda": 0.008, "posicao_atual": False},
+    {"codigo": "LINKBRL", "ativo": "LINK", "quantidade_moeda": 0.11, "posicao_atual": False},
+    
 ]
 
 # min_qty = 0.00002  # BTC
 # min_qty = 2 # ADA
 # min_qty = 0.0006 # eth
+# min_qty = 0.008 # SOL
 
+# Pastas de logs
 pasta_arquivo_erro = "./txt/r_erros_moedas.txt"
 pasta_arquivo_compras_e_vendas = "./txt/r_compra_vendas.txt"
 pasta_arquivo_logs_medias = "./txt/r_logs.txt"
@@ -42,7 +48,7 @@ pasta_arquivo_logs_medias = "./txt/r_logs.txt"
 # Função para pegar os dados de mercado (candles)
 def pegando_dados(codigo, intervalo):
     try:
-        candles = cliente_binance.get_klines(symbol=codigo, interval=intervalo, limit=1000)
+        candles = cliente_binance.get_klines(symbol=codigo, interval=intervalo, limit=500)
         precos = pd.DataFrame(candles)
         precos.columns = ["tempo_abertura", "abertura", "maxima", "minima", "fechamento", "volume", "tempo_fechamento", "moedas_negociadas", "numero_trades",
                         "volume_ativo_base_compra", "volume_ativo_cotação", "-"]
