@@ -1,0 +1,7 @@
+# Ignorar o arquivo .env
+.env
+
+# Ignorar o diretório /backup
+/backup/
+/old/
+/txt/
