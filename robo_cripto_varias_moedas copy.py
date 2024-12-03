@@ -16,14 +16,6 @@ load_dotenv()
 api_key = os.getenv("API_KEY")
 secret_key = os.getenv("SECRET_KEY")
 
-token_bot = os.getenv("TOKEN_BOT")
-chat_id_compra_venda = os.getenv("CHAT_ID_COMPRA_VENDA")
-chat_id_erros = os.getenv("CHAT_ID_ERROS")
-chat_id_logs = os.getenv("CHAT_ID_LOGS")
-
-bot = Bot(token=token_bot)
-
-
 # Inicializando o cliente da Binance
 cliente_binance = Client(api_key, secret_key)
 
@@ -37,11 +29,11 @@ periodo = Client.KLINE_INTERVAL_1HOUR
 
 # Definindo moedas
 moedas = [
-    {"codigo": "BTCBRL", "ativo": "BTC", "quantidade_moeda": 0.00002, "posicao_atual": True, "quantidade_minima_moeda": 0.00001},
-    {"codigo": "ETHBRL", "ativo": "ETH", "quantidade_moeda": 0.0006, "posicao_atual": True, "quantidade_minima_moeda": 0.0005},
-    {"codigo": "ADABRL", "ativo": "ADA", "quantidade_moeda": 2, "posicao_atual": True, "quantidade_minima_moeda": 1.5},
-    {"codigo": "SOLBRL", "ativo": "SOL", "quantidade_moeda": 0.009, "posicao_atual": True, "quantidade_minima_moeda": 0.008},
-    {"codigo": "LINKBRL", "ativo": "LINK", "quantidade_moeda": 0.11, "posicao_atual": True, "quantidade_minima_moeda": 0.09},
+    {"codigo": "BTCBRL", "ativo": "BTC", "quantidade_moeda": 0.00002, "posicao_atual": False},
+    {"codigo": "ETHBRL", "ativo": "ETH", "quantidade_moeda": 0.0006, "posicao_atual": False},
+    {"codigo": "ADABRL", "ativo": "ADA", "quantidade_moeda": 2, "posicao_atual": True},
+    {"codigo": "SOLBRL", "ativo": "SOL", "quantidade_moeda": 0.008, "posicao_atual": False},
+    {"codigo": "LINKBRL", "ativo": "LINK", "quantidade_moeda": 0.11, "posicao_atual": True},
     
 ]
 
@@ -54,60 +46,6 @@ moedas = [
 pasta_arquivo_erro = "./txt/r_erros_moedas.txt"
 pasta_arquivo_compras_e_vendas = "./txt/r_compra_vendas.txt"
 pasta_arquivo_logs_medias = "./txt/r_logs.txt"
-pasta_arquivo_infos_iniciadas = "./txt/r_infos_iniciadas.txt"
-
-
-
-def verifica_moedas():
-    conta = cliente_binance.get_account()
-    horario_atual = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())  # Obtém horário atual
-    for moeda in moedas:
-        try:
-            for ativo in conta["balances"]:
-                if ativo["asset"] == moeda["ativo"]:
-                    if float(ativo["free"]) > moeda["quantidade_minima_moeda"]:
-                        moeda["posicao_atual"] = True
-                        with open(pasta_arquivo_infos_iniciadas, "a") as arquivo:
-                            arquivo.write(f"[{horario_atual}][{moeda['codigo']}]: QtdDisponivel: [{ativo["free"]}] logo posição: [{moeda["posicao_atual"]}] \n")
-                    else:
-                        moeda["posicao_atual"] = False
-                        with open(pasta_arquivo_infos_iniciadas, "a") as arquivo:
-                            arquivo.write(f"[{horario_atual}][{moeda['codigo']}]: QtdDisponivel: [{ativo["free"]}] logo posição: [{moeda["posicao_atual"]}] \n")
-                
-        except Exception as e:
-            horario_atual = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
-            print(f"[{horario_atual}] Erro ao processar {moeda['codigo']}: {str(e)}")
-            with open(pasta_arquivo_erro, "a") as arquivo_erro:
-                arquivo_erro.write(f"[{horario_atual}] Erro em {moeda['codigo']}: {str(e)}\n")
-
-# mensagens_logs = []
-
-# # Função de enviar mensagem no telegram
-# async def enviar_mensagem(bot, chat_id, msg):
-#     try:
-#         await bot.send_message(chat_id=chat_id, text=msg)
-        
-#         asyncio.sleep(3)
-#         return True
-#     except Exception as e:
-#         print(f"Erro ao enviar mensagem: {e}")
-
-# async def enviar_mensagens_periodicamente():
-#     while True:
-#         # if mensagens_logs:
-#         # Enviar as mensagens acumuladas
-#         await enviar_mensagem(bot, chat_id_logs, mensagens_logs)
-#         print('Mensagem enviada')
-#         asyncio.sleep(5)
-#         mensagens_logs.clear()
-
-            
-#             # Após enviar, limpar a lista de mensagens
-            
-        
-#         # Espera 1 minuto
-#         await asyncio.sleep(60) 
-
 
 
 
@@ -141,7 +79,7 @@ def estrategia_trade(dados, moeda):
         
         horario_atual = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
         dados["media_rapida"] = dados["fechamento"].rolling(window=7).mean()
-        dados["media_devagar"] = dados["fechamento"].rolling(window=20).mean()
+        dados["media_devagar"] = dados["fechamento"].rolling(window=40).mean()
 
         
         ultima_media_rapida = dados["media_rapida"].iloc[-1]
@@ -150,7 +88,7 @@ def estrategia_trade(dados, moeda):
         print(f"[{ativo_operado}] Última Média Rápida: {ultima_media_rapida} | Última Média Devagar: {ultima_media_devagar}")
         with open(pasta_arquivo_logs_medias, "a") as arquivo_lucro: 
                 arquivo_lucro.write(f"[{horario_atual}] [{ativo_operado}] Última Média Rápida: {ultima_media_rapida} | Última Média Devagar: {ultima_media_devagar}\n")
-        # mensagens_logs.append(f"[{horario_atual}] [{ativo_operado}] Última Média Rápida: {ultima_media_rapida} | Última Média Devagar: {ultima_media_devagar}")
+
 
         conta = cliente_binance.get_account()
         quantidade_atual = 0
@@ -267,14 +205,11 @@ if __name__ == "__main__":
         print("Saindo...")
     elif modo == "1":
         horario_atual = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())  # Obtém horário atual
-        verifica_moedas()
+        
 
-        with open(pasta_arquivo_infos_iniciadas, "a") as arquivo_lucro:
+        with open("./txt/robo_varias_moedas.txt", "a") as arquivo_lucro:
             arquivo_lucro.write(f"[{horario_atual}] Infos passadas: [{moedas}] \n")
         
-        # loop = asyncio.get_event_loop()
-        # loop.create_task(enviar_mensagens_periodicamente())
-
         rodar_varias_moedas(moedas, periodo)
 
     elif modo == "2":
