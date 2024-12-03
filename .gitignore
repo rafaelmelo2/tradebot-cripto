@@ -4,4 +4,5 @@
 # Ignorar o diretório /backup
 /backup/
 /old/
-/txt/
+/txt/*
+!/txt/.gitkeep
