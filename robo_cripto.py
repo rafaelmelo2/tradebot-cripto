@@ -1,4 +1,5 @@
 import pandas as pd
+import matplotlib.pyplot as plt
 import os 
 import time 
 from binance.client import Client
@@ -34,16 +35,18 @@ cliente_binance = Client(api_key, secret_key)
 
 # PARÂMETROS INICIALIZAÇÃO
 #------------------------------------------------------------------------------
-quantidade_reservada = 1350  # Valor de BRL que deve ter disponível para compra
+quantidade_reservada = 1150  # Valor de BRL que deve ter disponível para compra
 
-    # MEDIAS MOVEIS
+# MEDIAS MOVEIS
+media_movel_ligeira = 1
 media_movel_rapida = 7
-media_movel_lenta = 40
+media_movel_lenta = 20
 #------------------------------------------------------------------------------
 
 
 # Período das candles
 periodo = Client.KLINE_INTERVAL_1HOUR
+# periodo = Client.KLINE_INTERVAL_30MINUTE
 
 # DEFININDO MOEDAS A SER NEGOCIADA
 # codigo                    : CODIGO A SER NEGOCIADO (BTCBRL)
@@ -65,6 +68,7 @@ moedas = [
 #-----------------------------------------------------------
 pasta_arquivo_erro = "./txt/r_erros_moedas.txt"                 # LOGS DE ERROS
 pasta_arquivo_compras_e_vendas = "./txt/r_compra_vendas.txt"    # COMPRAS E VENDAS
+pasta_arquivo_aviso_media_ligeira = "./txt/r_media_ligeira.txt" # MEDIA LIGEIRA
 pasta_arquivo_logs_medias = "./txt/r_logs.txt"                  # LOGS DAS MEDIAS
 pasta_arquivo_infos_iniciadas = "./txt/r_infos_iniciadas.txt"   # INICIALIZAÇÕES DE CÓDIGO
 #-----------------------------------------------------------
@@ -142,9 +146,11 @@ def estrategia_trade(dados, moeda):
         # PEGAR MEDIAS MOVEIS DOS DADOS ANTIGOS
         #------------------------------------------------------------------------------------
         horario_atual = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+        dados["media_ligeira"] = dados["fechamento"].rolling(window=media_movel_ligeira).mean()
         dados["media_rapida"] = dados["fechamento"].rolling(window=media_movel_rapida).mean()
         dados["media_devagar"] = dados["fechamento"].rolling(window=media_movel_lenta).mean()
         
+        ultima_media_ligeira = dados["media_ligeira"].iloc[-1]
         ultima_media_rapida = dados["media_rapida"].iloc[-1]
         ultima_media_devagar = dados["media_devagar"].iloc[-1]
         #------------------------------------------------------------------------------------
@@ -152,8 +158,8 @@ def estrategia_trade(dados, moeda):
 
         # IMPRIMIR AS MÉDIAS
         #-----------------------------------------------------------------------------------------------------------------------------------------------------------------
-        print(f"[{ativo_operado}] Última Média Rápida: {ultima_media_rapida} | Última Média Devagar: {ultima_media_devagar}")
-        log(pasta_arquivo_logs_medias, f"[{horario_atual}] [{ativo_operado}] Última Média Rápida: {ultima_media_rapida} | Última Média Devagar: {ultima_media_devagar}\n")
+        print(f"[{ativo_operado}] Última Média Ligeira: {ultima_media_ligeira} | Última Média Rápida: {ultima_media_rapida} | Última Média Devagar: {ultima_media_devagar}")
+        log(pasta_arquivo_logs_medias, f"[{horario_atual}] [{ativo_operado}] Última Média Ligeira: {ultima_media_ligeira} | Última Média Rápida: {ultima_media_rapida} | Última Média Devagar: {ultima_media_devagar}\n")
         #-----------------------------------------------------------------------------------------------------------------------------------------------------------------
         
         # VARIÁVEIS ALEATÓRIAS NECESSÁRIAS
@@ -162,39 +168,48 @@ def estrategia_trade(dados, moeda):
         pode_comprar = False
         #---------------------------------
 
-        # VERIFICANDO SALDO SE É POSSÍVEL COMPRAR MAIS OU NÃO
-        # VERIFICANDO A QUANTIDADE ATUAL DE ATIVOS DA MOEDA PASSADA
-        #------------------------------------------------------
-        for ativo in conta["balances"]:
-            if ativo["asset"] == ativo_operado:
-                quantidade_atual = Decimal(ativo["free"])
-            if ativo["asset"] == 'BRL':
-                if float(ativo["free"]) > quantidade_reservada:
-                    pode_comprar = True
-                else:
-                    pode_comprar = False
-        #------------------------------------------------------
+        
 
         # LOGICA DE COMPRA
         #-----------------------------------------------------------------------------------------------------------------------------------------------------------------
-        if ultima_media_rapida > ultima_media_devagar and pode_comprar and not posicao:
-            print(quantidade_moeda)
-            order = cliente_binance.create_order(symbol=codigo_ativo, side=SIDE_BUY, type=ORDER_TYPE_MARKET, quantity=quantidade_moeda)
+        if ultima_media_rapida > ultima_media_devagar and not posicao and ultima_media_ligeira > ultima_media_devagar:
             
-            print(f"[{horario_atual}] COMPROU {ativo_operado}!")
-            
-            moeda["posicao_atual"] = True
-            
-            log(pasta_arquivo_compras_e_vendas,f"[{horario_atual}] COMPROU O ATIVO [{ativo_operado}]\n")
-
+            # VERIFICANDO SALDO SE É POSSÍVEL COMPRAR MAIS OU NÃO
+            # VERIFICANDO A QUANTIDADE ATUAL DE ATIVOS DA MOEDA PASSADA
+            #------------------------------------------------------
             for ativo in conta["balances"]:
                 if ativo["asset"] == 'BRL':
-                    log(pasta_arquivo_compras_e_vendas, f"[{horario_atual}] Após compra [{ativo_operado}]: {ativo['free']}\n")
+                    qtd_BRL = ativo["free"]
+                    if float(ativo["free"]) > quantidade_reservada:
+                        pode_comprar = True
+                    else:
+                        pode_comprar = False
+            #------------------------------------------------------
+
+            if pode_comprar:
+                print(quantidade_moeda)
+                order = cliente_binance.create_order(symbol=codigo_ativo, side=SIDE_BUY, type=ORDER_TYPE_MARKET, quantity=quantidade_moeda)
+                
+                print(f"[{horario_atual}] COMPROU {ativo_operado}!")
+                
+                moeda["posicao_atual"] = True
+                
+                log(pasta_arquivo_compras_e_vendas,f"[{horario_atual}] COMPROU O ATIVO [{ativo_operado}]\n")
+                
+                log(pasta_arquivo_compras_e_vendas, f"[{horario_atual}] Após compra [{ativo_operado}]: {qtd_BRL}\n")
         #-----------------------------------------------------------------------------------------------------------------------------------------------------------------
 
         # LOGICA DE VENDA
         #-----------------------------------------------------------------------------------------------------------------------------------------------------------------
-        elif ultima_media_rapida < ultima_media_devagar and posicao:
+        elif ultima_media_rapida < ultima_media_devagar and posicao and ultima_media_ligeira < ultima_media_devagar:
+
+            # VERIFICANDO QUANTIDADE ATUAL PRA VENDER
+            #------------------------------------------------------
+            for ativo in conta["balances"]:
+                if ativo["asset"] == ativo_operado:
+                    quantidade_atual = Decimal(ativo["free"])
+                time.sleep(0.1)
+            #------------------------------------------------------
 
             symbol_info = cliente_binance.get_symbol_info(codigo_ativo)
             step_size = next(f for f in symbol_info['filters'] if f['filterType'] == 'LOT_SIZE')['stepSize']
@@ -205,7 +220,7 @@ def estrategia_trade(dados, moeda):
             print(f"[{horario_atual}] VENDEU {ativo_operado}!")
             moeda["posicao_atual"] = False
 
-            log(pasta_arquivo_compras_e_vendas, f"[{horario_atual}] VENDEU ATIVO [{ativo_operado}]\n")
+            log(pasta_arquivo_compras_e_vendas, f"[{horario_atual}] VENDEU ATIVO [{ativo_operado}] qtd: [{quantidade_venda}]\n")
 
 
             # Verificando saldo após a venda
@@ -214,6 +229,13 @@ def estrategia_trade(dados, moeda):
                     log(pasta_arquivo_compras_e_vendas, f"[{horario_atual}] Após venda (BRL): {ativo['free']}\n")
         #-----------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+        if ultima_media_ligeira > ultima_media_devagar and ultima_media_ligeira > ultima_media_rapida:
+            log(pasta_arquivo_aviso_media_ligeira, f"[{horario_atual}] ALTA: [{ativo_operado}] MA1 MAIOR QUE TODAS | MA1: {ultima_media_ligeira} | MA7: {ultima_media_rapida} | MA20: {ultima_media_devagar}\n")
+        elif ultima_media_ligeira < ultima_media_devagar and ultima_media_ligeira < ultima_media_rapida:
+            log(pasta_arquivo_aviso_media_ligeira, f"[{horario_atual}] BAIXA: [{ativo_operado}] MA1 MENOR QUE TODAS | MA1: {ultima_media_ligeira} | MA7: {ultima_media_rapida} | MA20: {ultima_media_devagar}\n")
+        # else:
+        #     log(pasta_arquivo_aviso_media_ligeira, f"[{horario_atual}] NEUTRO: [{ativo_operado}]\n")
+        
         return moeda
     
     except Exception as e:
@@ -266,6 +288,81 @@ def rodar_varias_moedas(moedas, intervalo):
 #---------------------------------------------------------------------------------------------------
 
 
+# Função de backtesting
+def backtest_estrategia(dados, media_rapida=7, media_lenta=40, taxa=0.001, valor_por_trade=11):
+    """
+    Realiza o backtest da estratégia de médias móveis em dados históricos.
+
+    Parâmetros:
+    - dados: DataFrame com as colunas ['fechamento', 'tempo_fechamento'].
+    - media_rapida: Período da média móvel rápida (default=7).
+    - media_lenta: Período da média móvel lenta (default=40).
+    - taxa: Taxa da Binance (0.1% = 0.001).
+    - valor_por_trade: Valor fixo investido em cada trade em BRL.
+
+    Retorna:
+    - resultados: DataFrame com os sinais e resultados acumulados.
+    """
+    dados = dados.copy()
+    dados["fechamento"] = pd.to_numeric(dados["fechamento"])
+
+    # Calculando as médias móveis
+    dados["media_rapida"] = dados["fechamento"].rolling(window=media_rapida).mean()
+    dados["media_lenta"] = dados["fechamento"].rolling(window=media_lenta).mean()
+
+    # Gerando sinais de compra/venda (apenas no momento da mudança de tendência)
+    dados["sinal"] = 0  # 0 = neutro, 1 = compra, -1 = venda
+    dados.loc[(dados["media_rapida"] > dados["media_lenta"]) & (dados["media_rapida"].shift(1) <= dados["media_lenta"].shift(1)), "sinal"] = 1
+    dados.loc[(dados["media_rapida"] <= dados["media_lenta"]) & (dados["media_rapida"].shift(1) > dados["media_lenta"].shift(1)), "sinal"] = -1
+
+    # Simulando as operações
+    saldo_brl = 10000  # Saldo inicial em BRL
+    saldo_ativo = 0
+    historico = []
+
+    for i in range(len(dados)):
+        preco_atual = dados["fechamento"].iloc[i]
+
+        if dados["sinal"].iloc[i] == 1:
+            # Compra
+            if saldo_brl >= valor_por_trade:
+                quantidade_comprada = valor_por_trade / preco_atual
+                saldo_ativo += quantidade_comprada * (1 - taxa)
+                saldo_brl -= valor_por_trade
+                historico.append(("compra", dados["tempo_fechamento"].iloc[i], preco_atual, valor_por_trade))
+
+        elif dados["sinal"].iloc[i] == -1:
+            # Venda
+            valor_venda = saldo_ativo * preco_atual * (1 - taxa)
+            saldo_brl += valor_venda
+            historico.append(("venda", dados["tempo_fechamento"].iloc[i], preco_atual, valor_venda))
+            saldo_ativo = 0
+
+    # Calculando o saldo final
+    saldo_final = saldo_brl + saldo_ativo * dados["fechamento"].iloc[-1]
+
+    print(f"Saldo Final: {saldo_final:.2f} BRL")
+    print(f"Operações Realizadas: {len(historico)}")
+
+    # Visualização
+    plt.figure(figsize=(12, 6))
+    plt.plot(dados["tempo_fechamento"], dados["fechamento"], label="Preço de Fechamento")
+    plt.plot(dados["tempo_fechamento"], dados["media_rapida"], label=f"Média Rápida ({media_rapida})")
+    plt.plot(dados["tempo_fechamento"], dados["media_lenta"], label=f"Média Lenta ({media_lenta})")
+    plt.scatter(dados.loc[dados["sinal"] == 1, "tempo_fechamento"],
+                dados.loc[dados["sinal"] == 1, "fechamento"], label="Sinais de Compra", color="green", marker="^", alpha=1)
+    plt.scatter(dados.loc[dados["sinal"] == -1, "tempo_fechamento"],
+                dados.loc[dados["sinal"] == -1, "fechamento"], label="Sinais de Venda", color="red", marker="v", alpha=1)
+    plt.legend()
+    plt.show()
+
+    return dados, historico
+
+
+
+
+
+
 # Execução principal
 #------------------------------------------------------------------------------------------------------------------------------
 if __name__ == "__main__":
@@ -284,6 +381,17 @@ if __name__ == "__main__":
     elif modo == "2":
         ativo_pegar_quantidade_minima = input("Codigo do ativo: ").strip().upper()
         print('Quantidade mínima pro ', ativo_pegar_quantidade_minima, pegar_quantidade_minima(ativo_pegar_quantidade_minima))
+    elif modo == "3":
+        # Carregando dados históricos para teste (exemplo de arquivo CSV)
+        # Substituir por API Binance para obter os candles reais
+        dados_historicos = pegando_dados("BTCBRL", periodo)
+        dados_historicos["tempo_fechamento"] = pd.to_datetime(dados_historicos["tempo_fechamento"])
+
+        # Executando o backtest
+        resultados, operacoes = backtest_estrategia(
+            dados_historicos, media_rapida=7, media_lenta=40
+        )
+    
     else:
         print("Modo inválido, tente novamente.")
 #------------------------------------------------------------------------------------------------------------------------------
