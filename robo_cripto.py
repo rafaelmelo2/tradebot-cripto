@@ -5,7 +5,7 @@ import time
 from binance.client import Client
 from binance.enums import *
 from dotenv import load_dotenv
-from decimal import Decimal
+from decimal import Decimal, ROUND_DOWN
 
 
 # Definindo as chaves da API
@@ -246,14 +246,34 @@ def estrategia_trade(dados, moeda):
 
 # AJUSTAR QUANTIDADE DE MOEDA PRA VENDA - linha 205
 #----------------------------------------------------------------
-def ajustar_quantidade_para_lote(quantidade, step_size):
+def ajustar_quantidade_para_lote(quantidade, lote):
     """
-    Ajusta a quantidade para ser um múltiplo válido de step_size.
+    Ajusta a quantidade para ser múltipla do tamanho do lote, respeitando a precisão esperada pela Binance.
+    
+    :param quantidade: A quantidade inicial (float ou Decimal).
+    :param lote: O tamanho do lote permitido pela Binance (float ou Decimal).
+    :return: A quantidade ajustada como Decimal.
     """
-    step_size = Decimal(step_size)
-    quantidade_ajustada = (quantidade // step_size) * step_size
-    return float(quantidade_ajustada)
+    # Converter para Decimal para evitar problemas de precisão de ponto flutuante
+    quantidade = Decimal(str(quantidade))
+    lote = Decimal(str(lote))
+    # Garantir que a quantidade seja múltipla do lote
+    quantidade_ajustada = (quantidade // lote) * lote
+    # Formatar o resultado com precisão ajustada para evitar notação científica
+    quantidade_formatada = quantidade_ajustada.quantize(lote, rounding=ROUND_DOWN)
+    return quantidade_formatada
 #----------------------------------------------------------------
+
+# def ajustar_quantidade_para_lote(quantidade, step_size):
+#     """
+#     Ajusta a quantidade para ser um múltiplo válido de step_size.
+#     """
+#     step_size = Decimal(step_size)
+#     quantidade_ajustada = (quantidade // step_size) * step_size
+#     return float(quantidade_ajustada)
+
+
+
 
 # Função para pegar o valor mínimo de compra
 #---------------------------------------------------------------------------------------------
